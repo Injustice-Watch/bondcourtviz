@@ -126,25 +126,6 @@ function cellover(d) {
         .style("stroke-width", 1)
         .style("stroke-opacity", 1);
 
-      /*
-
-      d3.selectAll("g.legend>rect")
-        .transition().duration(200)
-        .style("opacity", 0);
-
-      d3.selectAll("g.legend>rect" + judge_last + "_rect")
-        .transition().duration(200)
-        .style("opacity", 1);
-
-      d3.selectAll("g.legend>text")
-        .transition().duration(200)
-        .style("opacity", 0);
-
-      d3.selectAll("g.legend>text" + judge_last + "_text")
-        .transition().duration(200)
-        .style("opacity", 1);
-
-      */
   }
 
   // on mouseout for the legend symbol
@@ -155,17 +136,6 @@ function cellout() {
       .style("stroke-width", 1)
       .style("stroke-opacity", 1);
 
-    /*
-
-    d3.selectAll("g.legend>text" + judge_last + "_text")
-      .transition().duration(200)
-      .style("opacity", 1);
-
-    d3.selectAll("g.legend>rect" + judge_last + "_rect")
-      .transition().duration(200)
-      .style("opacity", 1);
-
-    */
   }
 
 // load data
