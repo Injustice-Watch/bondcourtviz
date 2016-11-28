@@ -2,8 +2,10 @@
 // if you want deterministic behavior, define a domain for the color scale.
 var m = 10,
     r = 100,
+    font_fam = "'Playfair Display', serif"
+    colors = ["#369682", "#E1B65B", "#DB842E", "#9E3E17"],
     z = d3.scale.ordinal()
-      .range(["#369682", "#E1B65B", "#DB842E", "#9E3E17"])
+      .range(colors)
 
 // Define a pie layout: the pie angle encodes the count of flights. Since our
 // data is stored in CSV, the counts are strings which we coerce to numbers.
@@ -51,6 +53,27 @@ function cellout() {
       .transition().duration(200)
       .style("opacity", 1);
 }
+/*
+d3.csv("nonviolent_only.csv", function(error, hearings) {
+  if (error) throw error;
+
+  // Nest the flight data by originating airport. Our data has the counts per
+  // airport and carrier, but we want to group counts by aiport.
+
+  var bondtypes = d3.nest()
+      .key(function(d) { return d["Bond Type"]; })
+      .entries(hearings);
+
+  console.log(bondtypes)
+
+  var legend = d3.select("#legend").selectAll("div")
+    .data(bondtypes)
+    .enter().append("div")
+    .attr("class", "legend_line")
+    .append("svg")
+});
+
+*/
 
 // Load the flight data.
 d3.csv("nonviolent_only.csv", function(error, hearings) {
@@ -62,8 +85,44 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
       .key(function(d) { return d["Judge"]; })
       .entries(hearings);
 
+  var bondtypes = d3.nest()
+      .key(function(d) { return d["Bond Type"]; })
+      .entries(hearings);
+
+  //legend
+
+  var legend = d3.select("#legend_box").selectAll("div")
+    .data(bondtypes)
+    .enter().append("div")
+    .attr("class", "legend")
+    .style("height", "33%")
+    .style("text-align", "right")
+    .append("svg")
+    .attr("overflow", "visible")
+    .attr("width", "100%")
+    .attr("height", "20")
+    .attr("text-align", "right")
+    .append("g");
+
+  legend.append('text')
+    .style("font-family", font_fam)
+    .style("font-size", "12px")
+    .style("text-anchor", "end")
+    .attr("x", "90%")
+    .attr("y", "14")
+    .text(function(d){
+      return btype[d.key]
+    });
+
+  legend.append('circle')
+    .attr("cx", "95%")
+    .attr("cy", "10")
+    .attr("r", "7")
+    .style("fill", function(d) {return z(d.key);});
+
   // Insert an svg element (with margin) for each airport in our dataset. A
   // child g element translates the origin to the pie center.
+
   var svg = d3.select("#pie").selectAll("div")
       .data(judges)
     .enter().append("div") // http://code.google.com/p/chromium/issues/detail?id=98951
@@ -71,6 +130,7 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
       .style("width", (r + m) * 2 + "px")
       .style("height", (r + m) * 2 + "px")
     .append("svg")
+      .attr("class", "chart")
       .attr("width", (r + m) * 2)
       .attr("height", (r + m) * 2)
     .append("g")
@@ -80,6 +140,7 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
   svg.append("text")
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
+      .style("font-family", font_fam)
       .text(function(d) { return d.key; });
 
   // Pass the nested per-airport values to the pie layout. The layout computes
@@ -104,6 +165,7 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
   g.filter(function(d) { return d.endAngle - d.startAngle > .2; }).append("text")
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
+      .style("font-family", font_fam)
       .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
       .text(function(d){return d.data["Bond Type"] + ": " + percent(hearings, d.data["Judge"], d.data) +"%";});
 
