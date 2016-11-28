@@ -1,4 +1,7 @@
 <!DOCTYPE html>
+<head>
+  <link href="https://fonts.googleapis.com/css?family=Playfair+Display" rel="stylesheet">
+</head>
 <meta charset="utf-8">
 <style>
 
@@ -11,8 +14,19 @@ svg {
 }
 
 </style>
+
 <body>
-  <div id="pie"></div>
+
+<div id = "pie-contain" style = "font-family: 'Playfair Display', serif; text-align: center; width: 660px;">
+  <div id = "title_legend_wrapper" style = "width: 90%; height: 100px; margin: 20px auto;">
+    <div id ="title" style = "width: 50%; text-align: left; display: inline-block; float: left;">
+      <h2 style="margin: 0;">Bond Types for Non-Violent Offenses by Judge</h2>
+    </div>
+    <div id = "legend_box" style = "width: 50%; display: inline-block; float: left; height: 60%; padding-top: 40px;"></div>
+  </div>
+  <div id="pie" style = "clear: both;"></div>
+</div>
+
 </body>
 <script src="http://d3js.org/d3.v3.min.js"></script>
 <script src="https://d3js.org/d3-array.v1.min.js"></script>
