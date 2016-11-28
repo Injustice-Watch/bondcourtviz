@@ -1,16 +1,8 @@
-var margin = {top: 50, right: 20, bottom: 100, left: 100},
-    width = 800 - margin.left - margin.right,
-    height = 800 - margin.top - margin.bottom;
-
-/* 
- * value accessor - returns the value to encode for a given data object.
- * scale - maps value to a visual display encoding, such as a pixel position.
- * map function - maps from data value to display value
- * axis - sets up axis
- */
-
-
-// to-do: stop double-counting charges for same person
+var margin = {top: 50, right: 20, bottom: 130, left: 100},
+    width = 660 - margin.left - margin.right,
+    height = 690 - margin.top - margin.bottom,
+    font_fam = "'Playfair Display', serif"
+    file_path = "bond_scatter_data.csv";
 
 //supplemental functions
 
@@ -18,27 +10,7 @@ function toTitleCase(str) {
     return str.replace(/\w\S*/g, function(txt){return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();});
 }
 
-// setup x 
-var xpos_j = {
-    "Adam Donald BourgeoisBATTERY" : 1,
-    "Adam Donald BourgeoisDRUG DELIVERY" : 2,
-    "Adam Donald BourgeoisDRUG POSSESSION" : 3,
-    "Adam Donald BourgeoisTHEFT" : 4,
-    "Adam Donald BourgeoisTRAFFIC MAJOR" : 5,
-    "Adam Donald BourgeoisWEAPON RELATED" : 6,
-    "Laura SullivanBATTERY" : 7,
-    "Laura SullivanDRUG DELIVERY" : 8,
-    "Laura SullivanDRUG POSSESSION" : 9,
-    "Laura SullivanTHEFT" : 10,
-    "Laura SullivanTRAFFIC MAJOR" : 11,
-    "Laura SullivanWEAPON RELATED" : 12,
-    "Peggy ChiampasBATTERY" : 13,
-    "Peggy ChiampasDRUG DELIVERY" : 14,
-    "Peggy ChiampasDRUG POSSESSION" : 15,
-    "Peggy ChiampasTHEFT" : 16,
-    "Peggy ChiampasTRAFFIC MAJOR" : 17,
-    "Peggy ChiampasWEAPON RELATED" : 18
-}
+//setup x axis positions
 
 var xpos_c = {
     "Adam Donald BourgeoisBATTERY" : 1,
@@ -98,7 +70,7 @@ var radius_scale = function(data, d) {
 };
 
 // add the graph canvas to the body of the webpage
-var svg = d3.select("#judges").append("svg")
+var svg = d3.select("#scatter_plot").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
     .attr("shape-rendering", "geometricPrecision")
@@ -139,16 +111,17 @@ function cellout() {
   }
 
 // load data
-d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
+d3.csv(file_path, function(error, data) {
 
   // change string (from CSV) into number format
+
   data.forEach(function(d) {
     d.JudgeCharge = xpos_c[d.Judge + d.Charge];
     d.Bond = +d.Bond;
 //    console.log(d);
   });
 
-  // don't want dots overlapping axis, so add in buffer to data domain
+    // don't want dots overlapping axis, so add in buffer to data domain
   xScale.domain([d3.min(data, xValue)-1, d3.max(data, xValue)+1]);
   yScale.domain([d3.min(data, yValue)-1, d3.max(data, yValue)+1]);
 
@@ -158,11 +131,13 @@ d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
       .attr("transform", "translate(0," + height + ")")
       .call(xAxis)
     .selectAll("text")
-        .attr("y", 20)
-        .attr("x", width/12) // 12 is number of ticks * 2
-        .attr("dy", ".35em") //add rotate here .attr("transform", "rotate(20)")
-        .style("text-anchor", "middle")
-        .style("font-size", "1em");
+        .attr("y", width/12 + 5)
+        .attr("x", width/12 - 5) // 12 is number of ticks * 2
+        .attr("dy", ".2em") //add rotate here .attr("transform", "rotate(20)")
+        .style("text-anchor", "end")
+        .attr("transform", "rotate(-35)")
+        .style("font-family", font_fam)
+        .style("font-size", "8pt");
 
   // y-axis
   svg.append("g")
@@ -172,11 +147,13 @@ d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
       .attr("class", "label")
       .attr("transform", "rotate(-90)")
       .attr("y", 6)
-      .attr("dy", ".71em")
+      .attr("dy", "8pt")
       .style("text-anchor", "end")
+      .style("font-family", font_fam)
+      .style("font-size", "8pt")
       .text("Bond");
 
-  // draw dots
+  // draw circles
   svg.selectAll(".dot")
       .data(data)
       .enter().append("circle")
@@ -198,7 +175,8 @@ d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
           tooltip.html("Type of Charge: " + toTitleCase(d.Charge) 
             + "<br/>" +  "Bond Amount: " + "$" + yValue(d) + "<br/>" + "Count: " + radius_scale(data, d))
                .style("left", (d3.event.pageX + 15) + "px")
-               .style("top", (d3.event.pageY - 28) + "px");
+               .style("top", (d3.event.pageY - 28) + "px")
+               .style("font-family", font_fam);
           cellover(d.Judge);
       })
       .on("mouseout", function(d) {
@@ -207,6 +185,32 @@ d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
                .style("opacity", 0);
           cellout()
       });
+
+  svg.append("text")
+  .text("Type of Charge vs. Bond by Judge")
+  .attr("x", "45px")
+  .attr("y", "20px")
+  .style("font-family", font_fam)
+  .style("font-size", "18pt")
+  .style("font-weight", "bold");
+
+  svg.append("text")
+  .text("**Top two bonds for weapon-related charges given")
+  .attr("x", "0px")
+  .attr("y", "620px")
+  .style("font-family", font_fam)
+  .style("font-size", "8pt")
+  .style("font-style", "italic")
+  .style("fill" , "#979797");
+
+  svg.append("text")
+  .text("by Adam Bourgeoisof 5 million and 2 million not shown")
+  .attr("x", "0px")
+  .attr("y", "635px")
+  .style("font-family", font_fam)
+  .style("font-size", "8pt")
+  .style("font-style", "italic")
+  .style("fill" , "#979797");
 
   // draw legend
   var legend = svg.selectAll(".legend")
@@ -220,7 +224,7 @@ d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
   // draw legend colored rectangles
   legend.append("rect")
         .attr("x", width - 18)
-        .attr("y", 20)
+        .attr("y", 30)
         .attr("width", 18)
         .attr("height", 18)
         .style("fill", color);
@@ -228,11 +232,12 @@ d3.csv("judges_scatter_d_names_no_outliers.csv", function(error, data) {
   // draw legend text
   legend.append("text")
       .attr("x", width - 24)
-      .attr("y", 29)
+      .attr("y", 39)
       .attr("dy", ".35em")
       .style("text-anchor", "end")
-      .style("font-size", "1em")
-      .text(function(d) { return d;})
+      .style("font-size", "8pt")
+      .style("font-family", font_fam)
+      .text(function(d) { return d;});
 
 });
 
