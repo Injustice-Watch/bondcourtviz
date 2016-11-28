@@ -53,27 +53,6 @@ function cellout() {
       .transition().duration(200)
       .style("opacity", 1);
 }
-/*
-d3.csv("nonviolent_only.csv", function(error, hearings) {
-  if (error) throw error;
-
-  // Nest the flight data by originating airport. Our data has the counts per
-  // airport and carrier, but we want to group counts by aiport.
-
-  var bondtypes = d3.nest()
-      .key(function(d) { return d["Bond Type"]; })
-      .entries(hearings);
-
-  console.log(bondtypes)
-
-  var legend = d3.select("#legend").selectAll("div")
-    .data(bondtypes)
-    .enter().append("div")
-    .attr("class", "legend_line")
-    .append("svg")
-});
-
-*/
 
 // Load the flight data.
 d3.csv("nonviolent_only.csv", function(error, hearings) {
@@ -102,7 +81,9 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
     .attr("width", "100%")
     .attr("height", "20")
     .attr("text-align", "right")
-    .append("g");
+    .append("g")
+    .on("mouseover", function(d){ cellover(d.key); })
+    .on("mouseout", function(d) { cellout(); });
 
   legend.append('text')
     .style("font-family", font_fam)
@@ -153,7 +134,7 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
   g.append("path")
       .attr("d", arc)
       .attr("class", function(d) {
-        return d.data["Bond Type"].split(" ").slice(-1)[0];
+        return d.data["Bond Type"];
       })
       .style("fill", function(d) { return z(d.data["Bond Type"]); })
       .on("mouseover", function(d) {cellover(d.data["Bond Type"]);})
@@ -167,7 +148,8 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
       .attr("text-anchor", "middle")
       .style("font-family", font_fam)
       .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
-      .text(function(d){return d.data["Bond Type"] + ": " + percent(hearings, d.data["Judge"], d.data) +"%";});
+      .text(function(d){return percent(hearings, d.data["Judge"], d.data) +"%";})
+      .style("font-size", "2em");
 
   // Computes the label angle of an arc, converting from radians to degrees.
   function angle(d) {
