@@ -1,14 +1,16 @@
-// Define the margin, radius, and color scale. Colors are assigned lazily, so
-// if you want deterministic behavior, define a domain for the color scale.
+// Define the margin, radius, and color scale.
+
 var m = 10,
     r = 100,
-    font_fam = "'Playfair Display', serif"
+    font_fam = "'Playfair Display', serif",
     colors = ["#369682", "#E1B65B", "#DB842E", "#9E3E17"],
     z = d3.scale.ordinal()
       .range(colors)
+    file_path = "nonviolent_bondtype_counts.csv"
 
-// Define a pie layout: the pie angle encodes the count of flights. Since our
+// Define a pie layout: the pie angle encodes the count of hearings. Since our
 // data is stored in CSV, the counts are strings which we coerce to numbers.
+
 var pie = d3.layout.pie()
     .value(function(d) { return +d["Hearing ID"]; })
     .sort(function(a, b) { return b["Hearing ID"] - a["Hearing ID"]; });
@@ -27,6 +29,8 @@ function percent(hearings, judge, datum) {
   };
   return Math.round((datum["Hearing ID"] / total) * 100)
 }
+
+//Dictionary for transforming bond type counts into legible meaning
 
 var btype = {
   "I" : "Released on Own Recognizance",
@@ -54,12 +58,13 @@ function cellout() {
       .style("opacity", 1);
 }
 
-// Load the flight data.
-d3.csv("nonviolent_only.csv", function(error, hearings) {
+// Load the bond data.
+
+d3.csv(file_path, function(error, hearings) {
   if (error) throw error;
 
-  // Nest the flight data by originating airport. Our data has the counts per
-  // airport and carrier, but we want to group counts by aiport.
+  // Nest the bond type data by judge (for charts) and type (for legend).
+
   var judges = d3.nest()
       .key(function(d) { return d["Judge"]; })
       .entries(hearings);
@@ -101,12 +106,12 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
     .attr("r", "7")
     .style("fill", function(d) {return z(d.key);});
 
-  // Insert an svg element (with margin) for each airport in our dataset. A
+  // Insert an svg element (with margin) for each judge in our dataset. A
   // child g element translates the origin to the pie center.
 
-  var svg = d3.select("#pie").selectAll("div")
+  var svg = d3.select("#pie_charts").selectAll("div")
       .data(judges)
-    .enter().append("div") // http://code.google.com/p/chromium/issues/detail?id=98951
+    .enter().append("div")
       .style("display", "inline-block")
       .style("width", (r + m) * 2 + "px")
       .style("height", (r + m) * 2 + "px")
@@ -117,14 +122,15 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
     .append("g")
       .attr("transform", "translate(" + (r + m) + "," + (r + m) + ")");
 
-  // Add a label for the airport. The `key` comes from the nest operator.
+  // Add a label for the judge. The `key` comes from the nest operator.
   svg.append("text")
       .attr("dy", ".35em")
       .attr("text-anchor", "middle")
       .style("font-family", font_fam)
+      .style("font-size", "10px")
       .text(function(d) { return d.key; });
 
-  // Pass the nested per-airport values to the pie layout. The layout computes
+  // Pass the nested per-judge values to the pie layout. The layout computes
   // the angles for each arc. Another g element will hold the arc and its label.
   var g = svg.selectAll("g")
       .data(function(d) { return pie(d.values); })
@@ -140,7 +146,8 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
       .on("mouseover", function(d) {cellover(d.data["Bond Type"]);})
       .on("mouseout", function(d) {cellout();})
     .append("title")
-      .text(function(d) { return d.data["Hearing ID"] + " " + btype[d.data["Bond Type"]]; });
+      .text(function(d) { return d.data["Hearing ID"] + " " + btype[d.data["Bond Type"]]; })
+      .style("font-family", font_fam);
 
   // Add a label to the larger arcs, translated to the arc centroid and rotated.
   g.filter(function(d) { return d.endAngle - d.startAngle > .2; }).append("text")
@@ -149,7 +156,7 @@ d3.csv("nonviolent_only.csv", function(error, hearings) {
       .style("font-family", font_fam)
       .attr("transform", function(d) { return "translate(" + arc.centroid(d) + ")"; })
       .text(function(d){return percent(hearings, d.data["Judge"], d.data) +"%";})
-      .style("font-size", "2em");
+      .style("font-size", "1.5em");
 
   // Computes the label angle of an arc, converting from radians to degrees.
   function angle(d) {
